@@ -222,6 +222,7 @@ private:
   }
 
   void Clone(const MergerHeap<T>& clone) {
+    root_ = clone.root_;
     size_ = clone.size_;
     child_size_ = clone.child_size_;
     path_dirs_ = clone.path_dirs_;
@@ -319,8 +320,9 @@ public:
     const Edge<T>& t_edge = *sp_tree.path_rbegin(v);
     a_.reserve(std::distance(adj_edges_begin, adj_edges_end));
     for (; adj_edges_begin != adj_edges_end; ++adj_edges_begin) {
-      if (adj_edges_begin->head != t_edge.tail ||
-          !equals(adj_edges_begin->data, t_edge.data)) {
+      if (sp_tree.is_reachable(adj_edges_begin->head) &&
+          (adj_edges_begin->head != t_edge.tail ||
+              !equals(adj_edges_begin->data, t_edge.data))) {
         a_.push_back(HeapData<T>(weight_diff(
             closure(adj_edges_begin->data, d[adj_edges_begin->tail]),
             d[adj_edges_begin->head]),
@@ -519,7 +521,7 @@ public:
     return sp_tree_;
   }
 
-  inline bool is_leaf(const Locator& l) const {
+  inline bool is_end(const Locator& l) const {
     return l.h_t_node_ == NULL;
   }
 
@@ -528,7 +530,9 @@ private:
   void InitFromSpTree(const AdjacencyList<T>& adj, const TEquals& equals,
                       const TWeightDiff& weight_diff) {
     HeapDataComparator<TCompare> h_out_comp(comp_);
+    h_t_.clear();
     h_t_.resize(adj.max_vertex_id() + 1);
+    h_out_.clear();
     h_out_.resize(adj.max_vertex_id() + 1);
 
     std::vector<VertexId> v_toposorted;
