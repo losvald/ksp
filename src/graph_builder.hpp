@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "edge.hpp"
+#include "edge_map.hpp"
 #include "vertex.hpp"
 #include "vertex_map.hpp"
 
@@ -37,7 +38,7 @@ public:
   typedef V VertexType;
   typedef std::map<V, VertexId, VCompare> VertexIdMap;
   typedef Edge<T> EdgeType;
-  typedef std::vector<EdgeType> EdgeList;
+  typedef EdgeMap<EdgeType> EdgeMapType;
 
   GraphBuilder() { }
 
@@ -50,7 +51,7 @@ public:
     using std::endl;
     os << "|V| = " << g.vertex_count() << endl;
     os << "|E| = " << g.edge_count() << endl;
-    for (typename EdgeList::const_iterator e = g.edges_.begin();
+    for (typename EdgeMapType::const_iterator e = g.edges_.begin();
         e != g.edges_.end(); ++e) {
       os << g.vertex(e->tail) << " -> " << g.vertex(e->head) << ": " <<
           e->data << endl;
@@ -59,18 +60,23 @@ public:
     return os;
   }
 
-  void AddVertex(const V& v) {
+  VertexId AddVertex(const V& v) {
     if (!vertex_ids_.count(v)) {
-      vertex_ids_.insert(std::make_pair(v, vertex_ids_.size()));
+      VertexId v_id = vertex_ids_.size();
+      vertex_ids_.insert(std::make_pair(v, v_id));
       vertices_.push_back(v);
+      return v_id;
     }
+    return kNullVertexId;
   }
 
-  void AddEdge(const V& tail, const V& head, const T& edge_data) {
+  EdgeId AddEdge(const V& tail, const V& head, const T& edge_data) {
     if (!vertex_ids_.count(tail) || !vertex_ids_.count(head))
       throw NoSuchVertexException();
+    EdgeId e_id = edges_.size();
     edges_.push_back(Edge<T>(vertex_ids_.at(tail), vertex_ids_.at(head),
                              edge_data));
+    return e_id;
   }
 
   void Clear() {
@@ -80,7 +86,7 @@ public:
   }
 
   void Transpose() {
-    for (typename EdgeList::iterator e = edges_.begin(), last = edges_.end();
+    for (typename EdgeMapType::iterator e = edges_.begin(), last = edges_.end();
         e != last; ++e)
       e->Reverse();
   }
@@ -103,11 +109,15 @@ public:
     return vertex_ids_.at(vertex);
   }
 
-  typename EdgeList::const_iterator edges_begin() const {
+  const EdgeType& edge(EdgeId edge_id) const {
+    return edges_.at(edge_id);
+  }
+
+  typename EdgeMapType::const_iterator edges_begin() const {
     return edges_.begin();
   }
 
-  typename EdgeList::const_iterator edges_end() const {
+  typename EdgeMapType::const_iterator edges_end() const {
     return edges_.end();
   }
 
@@ -122,7 +132,7 @@ public:
 private:
   VertexIdMap vertex_ids_;
   VertexMap<V> vertices_;
-  EdgeList edges_;
+  EdgeMapType edges_;
 };
 
 }  // namespace ksp

@@ -233,7 +233,11 @@ TEST(dijkstra, random_big_sparse) {
   unsigned dist_max = std::numeric_limits<unsigned>::max();
   ShortestPathTree<> exp_spt, act_spt;
 
+#ifndef DEBUG
   const unsigned n = 200000, m = 3000000, seed = 5U;
+#else
+  const unsigned n = 20000, m = 30000, seed = 5U;
+#endif
   Uewg weight_gen(1, 1000, seed);
   MultigraphGen graph_gen(n, weight_gen, seed);
 
@@ -265,7 +269,11 @@ TEST(dijkstra, random_big_dense) {
   unsigned dist_max = std::numeric_limits<unsigned>::max();
   ShortestPathTree<> exp_spt, act_spt;
 
+#ifndef DEBUG
   const unsigned n = k*5000, m = k*k*2000000, seed = 5U;
+#else
+  const unsigned n = k*1000, m = k*k*80000, seed = 5U;
+#endif
   Uewg weight_gen(1, 1000, seed);
   MultigraphGen graph_gen(n, weight_gen, seed);
 //  ::gen::test::DiscreteRandomVariable<unsigned> var;

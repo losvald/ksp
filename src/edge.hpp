@@ -21,11 +21,17 @@
 #define EDGE_HPP_
 
 #include <algorithm>
+#include <exception>
 #include <iostream>
 
 #include "vertex.hpp"
 
+#include "util/counter_iterator.hpp"
+
 namespace ksp {
+
+typedef std::size_t EdgeId;
+typedef CounterIterator<EdgeId> EdgeIdIterator;
 
 template<typename T = unsigned>
 class Edge {
@@ -52,6 +58,25 @@ Edge<T> NullEdge() {
   static Edge<T> kNullEdge(kNullVertexId, kNullVertexId, T());
   return kNullEdge;
 }
+
+
+const EdgeId kNullEdgeId = -1;
+
+struct EdgeException : public std::exception {
+  EdgeException() : e_(NULL) { }
+  EdgeException(EdgeId e) : e_(new EdgeId(e)) { }
+  virtual ~EdgeException() throw() {
+    delete e_;
+  }
+protected:
+  EdgeId* e_;
+};
+
+struct NoSuchEdgeException : public EdgeException {
+  NoSuchEdgeException();
+  NoSuchEdgeException(EdgeId e);
+  virtual const char* what() const throw();
+};
 
 }  // namespace ksp
 

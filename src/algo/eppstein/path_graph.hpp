@@ -36,6 +36,8 @@
 #include "../sp_range_query.hpp"
 #include "../topological_sort.hpp"
 
+#include "path_tree.hpp"
+
 namespace ksp {
 
 namespace {
@@ -519,6 +521,11 @@ public:
 
   inline const ShortestPathTree<T>& shortest_path_tree() const {
     return sp_tree_;
+  }
+
+  EppsteinPathTree<T, TClosure> path_tree(VertexId start_vertex) const {
+    return EppsteinPathTree<T, TClosure>(&sp_range_query_, &sp_tree_,
+                                         start_vertex);
   }
 
   inline bool is_end(const Locator& l) const {

@@ -54,7 +54,7 @@ struct MyEdgeEq {
 std::string ToUniqueString(const MyGraphBuilder& g) {
   typedef std::vector<std::string> Lines;
   Lines lines;
-  for (MyGraphBuilder::EdgeList::const_iterator e = g.edges_begin();
+  for (MyGraphBuilder::EdgeMapType::const_iterator e = g.edges_begin();
         e != g.edges_end(); ++e) {
       std::ostringstream line;
       line << g.vertex(e->tail) << " " << g.vertex(e->head) << " " <<

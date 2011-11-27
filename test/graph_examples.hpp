@@ -20,8 +20,10 @@
 #ifndef GRAPH_EXAMPLES_HPP_
 #define GRAPH_EXAMPLES_HPP_
 
+#include <map>
 #include <string>
 
+#include "../src/edge_map.hpp"
 #include "../src/graph_builder.hpp"
 
 namespace ksp {
@@ -32,8 +34,7 @@ namespace example {
 
 namespace graph {
 
-namespace {
-}
+typedef std::map<std::string, EdgeId> LedaReverseEdgeMap;
 
 static GraphBuilder<char> LedaShortestPaths() {
   // http://www.leda-tutorial.org/en/unofficial/ch05s03s03.html
@@ -96,6 +97,58 @@ static GraphBuilder<char> LedaShortestPaths() {
   g.AddEdge('O', 'P', 1);
 
   g.AddEdge('P', 'N', 4);
+
+  return g;
+}
+
+static std::map<std::string, EdgeId> LedaShortestPathsReverseEdgeMap() {
+  std::map<std::string, EdgeId> ret;
+  GraphBuilder<char> gb = LedaShortestPaths();
+  EdgeId id = EdgeId();
+  for (GraphBuilder<char>::EdgeMapType::const_iterator it = gb.edges_begin(),
+      it_end = gb.edges_end(); it != it_end; ++it) {
+    std::string s;
+    s.push_back(gb.vertex(it->tail));
+    s.push_back(gb.vertex(it->head));
+    ret[s] = id++;
+  }
+  return ret;
+}
+
+static GraphBuilder<char> EppsteinFigure45ShortestPaths() {
+  char v_out_min = 'a', v_out_max = 'a' + 12 - 1;
+  int n = 5 + v_out_max - v_out_min + 1;
+
+  GraphBuilder<char> g(n);
+  g.AddVertex('p');
+  g.AddVertex('q');
+  g.AddVertex('r');
+  g.AddVertex('s');
+  g.AddVertex('t');
+  for (char v = v_out_min; v <= v_out_max; ++v)
+    g.AddVertex(v);
+
+  g.AddEdge('p', 'q', 100);
+  g.AddEdge('q', 'r', 100);
+  g.AddEdge('s', 'r', 100);
+  g.AddEdge('r', 't', 100);
+
+  g.AddEdge('p', 'a',  1);  g.AddEdge('a', 't',  3*100);
+  g.AddEdge('p', 'd',  6);  g.AddEdge('d', 't',  3*100);
+  g.AddEdge('p', 'h', 12);  g.AddEdge('h', 't',  3*100);
+  g.AddEdge('p', 'j', 14);  g.AddEdge('j', 't',  3*100);
+
+  g.AddEdge('q', 'i', 13);  g.AddEdge('i', 't',  2*100);
+
+  g.AddEdge('r', 'k', 17);  g.AddEdge('k', 't',  1*100);
+  g.AddEdge('r', 'l', 19);  g.AddEdge('l', 't',  1*100);
+
+  g.AddEdge('s', 'b',  3);  g.AddEdge('b', 't',  2*100);
+  g.AddEdge('s', 'e',  7);  g.AddEdge('e', 't',  2*100);
+
+  g.AddEdge('t', 'c',  4);  g.AddEdge('c', 't',  0*100);
+  g.AddEdge('t', 'f',  8);  g.AddEdge('f', 't',  0*100);
+  g.AddEdge('t', 'g', 10);  g.AddEdge('g', 't',  0*100);
 
   return g;
 }
