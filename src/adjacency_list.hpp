@@ -20,14 +20,13 @@
 #ifndef ADJACENCY_LIST_HPP_
 #define ADJACENCY_LIST_HPP_
 
+#include <iostream>
 #include <vector>
 
 #include "edge.hpp"
 #include "vertex.hpp"
 
 namespace ksp {
-
-static bool gDebugTT; // FIXME
 
 template<typename T = unsigned>
 class AdjacencyList {
@@ -39,6 +38,22 @@ public:
   template<typename InputIterator>
   AdjacencyList(InputIterator edges_begin, InputIterator edges_end) {
     Init(edges_begin, edges_end);
+  }
+
+  friend std::ostream& operator<<(std::ostream& os, const AdjacencyList& a) {
+    for (VertexId v = 0; v < a.max_vertex_id(); ++v) {
+      os << v << " : ";
+      for (typename EdgeList::const_iterator it = a.first(v), last = a.last(v);
+          it != last; ++it) {
+        os << *it << " ";
+      }
+      os << std::endl;
+    }
+    return os;
+  }
+
+  inline std::size_t Count(VertexId v_id) const {
+    return last(v_id) - first(v_id);
   }
 
   inline ConstIter first(VertexId v_id) const {
@@ -63,24 +78,20 @@ public:
     return first_[next_v_id];
   }
 
-  inline std::size_t Count(VertexId v_id) const {
-    return last(v_id) - first(v_id);
+  inline EdgeIdIterator ids_first(VertexId v_id) const {
+    return EdgeIdIterator(first(v_id) - adj_.begin());
   }
 
-  friend std::ostream& operator<<(std::ostream& os, const AdjacencyList& a) {
-    for (VertexId v = 0; v < a.max_vertex_id(); ++v) {
-      os << v << " : ";
-      for (typename EdgeList::const_iterator it = a.first(v), last = a.last(v);
-          it != last; ++it) {
-        os << *it << " ";
-      }
-      os << std::endl;
-    }
-    return os;
+  inline EdgeIdIterator ids_last(VertexId v_id) const {
+    return EdgeIdIterator(last(v_id) - adj_.begin());
   }
 
   std::size_t max_vertex_id() const {
     return first_.size() - 2U;
+  }
+
+  std::size_t max_edge_id() const {
+    return adj_.size() - 1U;
   }
 
   std::size_t edge_count() const {
@@ -93,6 +104,18 @@ public:
 
   ConstIter edges_end() const {
     return adj_.end();
+  }
+
+  EdgeIdIterator edge_ids_begin() const {
+    return EdgeIdIterator(0U);
+  }
+
+  EdgeIdIterator edge_ids_end() const {
+    return EdgeIdIterator(max_edge_id() + 1U);
+  }
+
+  const Edge<T>& edge(EdgeId id) const {
+    return adj_.at(id);
   }
 
 private:

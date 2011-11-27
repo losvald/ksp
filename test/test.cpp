@@ -21,6 +21,8 @@
 
 #define RUN_TESTS_ENABLED
 
+bool gDebugTT = false;
+
 #ifdef RUN_TESTS_ENABLED
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);

@@ -27,6 +27,8 @@
 
 #include <gtest/gtest.h>
 
+extern bool gDebugTT;
+
 template<class InputIterator1, class InputIterator2, class Equals>
 bool CheckEq(InputIterator1 exp_begin, InputIterator1 exp_end,
              InputIterator2 act_begin, InputIterator2 act_end,
