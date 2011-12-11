@@ -23,8 +23,6 @@
 //#define SKIP_TESTS 1
 #define VERBOSITY 1
 
-#define RUN_TESTS_ENABLED
-
 #include <algorithm>
 
 #include <gtest/gtest.h>
