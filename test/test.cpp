@@ -19,7 +19,7 @@
 
 #include <gtest/gtest.h>
 
-#define RUN_TESTS_ENABLED
+#include "test.hpp"
 
 bool gDebugTT = false;
 
