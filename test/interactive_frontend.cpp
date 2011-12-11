@@ -92,8 +92,13 @@ struct Params {
         throw Exception("if density is set, either n or m must not be set");
       if (!m.is_set())
         m.set(d() * n() * (n() - 1));
-      else
+      else {
         n.set((d() + sqrt(d() * (d() + 8 * m()))) / (2 * d()));
+        unsigned n2 = n();
+        while (2 * m() > n2 * (n2 - 1))
+          ++n2;
+        n.set(n2);
+      }
     } else {
       n.set_if_not(1000);
       m.set_if_not(100000);
@@ -171,8 +176,8 @@ struct Params {
 void PrintUsage() {
   string tabs_m1 = "\t\t", tabs = tabs_m1 + "\t", tabs_p1 = tabs + "\t";
   cerr << "Usage:" << endl <<
-      "-h, --help" << tabs << "prints usage info" <<
-      "-v, --verbose" << tabs_m1 << "increases verbosity level" <<
+      "-h, --help" << tabs << "prints usage info" << endl <<
+      "-v, --verbose" << tabs << "increases verbosity level" << endl <<
       "Graph generation:" << endl <<
       "-n, --vertex-count" << tabs_m1 << "sets the number of vertices" <<
       endl <<
