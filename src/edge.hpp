@@ -40,11 +40,47 @@ public:
   VertexId head;
   T data;
 
-  inline Edge(const T& tail, const T& head, const T& data)
+  Edge();
+
+  inline Edge(VertexId tail, VertexId head, const T& data)
   : tail(tail), head(head), data(data) { }
 
   friend std::ostream& operator<<(std::ostream& os, const Edge& e) {
     os << "(" << e.tail << " -> " << e.head << ": " << e.data << ")";
+    return os;
+  }
+
+  inline void Reverse() {
+    std::swap(tail, head);
+  }
+};
+
+typedef Edge<void*> UnweightedEdge;
+
+template<>
+class Edge<void*> {
+public:
+  VertexId tail;
+  VertexId head;
+
+  Edge();
+
+  inline Edge(VertexId tail, VertexId head)
+      : tail(tail), head(head) { }
+
+  inline Edge(VertexId tail, VertexId head, void* null)
+      : tail(tail), head(head) { }
+
+  friend bool operator==(const UnweightedEdge& lhs, const UnweightedEdge& rhs) {
+    return lhs.head == rhs.head && lhs.tail == rhs.tail;
+  }
+
+  friend bool operator!=(const UnweightedEdge& lhs, const UnweightedEdge& rhs) {
+    return !(lhs == rhs);
+  }
+
+  friend std::ostream& operator<<(std::ostream& os, const Edge& e) {
+    os << "(" << e.tail << " -> " << e.head << ")";
     return os;
   }
 
@@ -59,8 +95,13 @@ Edge<T> NullEdge() {
   return kNullEdge;
 }
 
+template<typename T>
+Edge<T>::Edge() {
+  *this = NullEdge<T>();
+}
 
 const EdgeId kNullEdgeId = -1;
+
 
 struct EdgeException : public std::exception {
   EdgeException() : e_(NULL) { }

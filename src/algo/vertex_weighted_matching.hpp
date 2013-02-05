@@ -17,13 +17,15 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <gtest/gtest.h>
+#ifndef VERTEX_WEIGHTED_MATCHING_HPP_
+#define VERTEX_WEIGHTED_MATCHING_HPP_
 
-#include "test.hpp"
+namespace ksp {
 
-bool gDebugTT = false;
+class Matching {
 
-int main(int argc, char** argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
+};
+
+} // namespace ksp
+
+#endif  /* VERTEX_WEIGHTED_MATCHING_HPP_ */

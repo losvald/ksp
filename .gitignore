@@ -1,5 +1,11 @@
 *~
 Debug/*
 Release/*
-!*.mk
-![mM]akefile
+
+# autotools-generated files
+/autom4te.cache/
+/build-aux/
+/aclocal.m4
+/config.h.in
+/configure
+Makefile.in
