@@ -26,6 +26,18 @@
 #include "edge.hpp"
 #include "vertex.hpp"
 
+#define FOR_ADJEDGE(type, it, adj, v)                                   \
+  for (ksp::AdjacencyList< type >::ConstIter it = (adj).first(v),       \
+           last = (adj).last(v); it != last; ++it)
+
+#define FOR_ADJEDGEID(it, adj, v)                                       \
+  for (ksp::EdgeIdIterator it = (adj).ids_first(v),                     \
+           last = (adj).ids_last(v); it != last; ++it)
+
+#define FOR_ADJLISTEDGES(type, it, adj)                                 \
+  for (ksp::AdjacencyList< type >::ConstIter it = (adj).edges_begin(),  \
+           last = (adj).edges_end(); it != last; ++it)
+
 namespace ksp {
 
 template<typename T = unsigned>
@@ -38,6 +50,19 @@ public:
   template<typename InputIterator>
   AdjacencyList(InputIterator edges_begin, InputIterator edges_end) {
     Init(edges_begin, edges_end);
+  }
+
+  AdjacencyList(const AdjacencyList& other)
+      : adj_(other.adj_),
+        first_(other.first_) {
+    for (typename std::vector<Iter>::iterator it = first_.begin(),
+             it_end = first_.end(); it != it_end; ++it)
+      *it += (adj_.begin() - other.adj_.begin());
+  }
+
+  AdjacencyList& operator=(AdjacencyList other) {
+    Swap(other);
+    return *this;
   }
 
   friend std::ostream& operator<<(std::ostream& os, const AdjacencyList& a) {
@@ -86,11 +111,11 @@ public:
     return EdgeIdIterator(last(v_id) - adj_.begin());
   }
 
-  std::size_t max_vertex_id() const {
+  VertexId max_vertex_id() const {
     return first_.size() - 2U;
   }
 
-  std::size_t max_edge_id() const {
+  EdgeId max_edge_id() const {
     return adj_.size() - 1U;
   }
 
@@ -116,6 +141,14 @@ public:
 
   const Edge<T>& edge(EdgeId id) const {
     return adj_.at(id);
+  }
+
+  EdgeId edge_id(ConstIter iter) const {
+    return iter - edges_begin();
+  }
+
+  EdgeId edge_id(Iter iter) const {
+    return iter - edges_begin();
   }
 
 private:
@@ -150,6 +183,11 @@ private:
     // set first_ iterators to correct positions
     for (InputIterator e = edges_begin; e != edges_end; ++e)
       *(--first_[e->tail]) = *e;
+  }
+
+  void Swap(AdjacencyList& other) {
+    std::swap(adj_, other.adj_);
+    std::swap(first_, other.first_);
   }
 
   EdgeList adj_;
