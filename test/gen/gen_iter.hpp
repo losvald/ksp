@@ -20,6 +20,8 @@
 #ifndef GEN_ITER_HPP_
 #define GEN_ITER_HPP_
 
+#include <cstddef>
+
 #include <iterator>
 
 namespace gen {

@@ -2,6 +2,7 @@ AM_CXXFLAGS = -Wall
 bin_PROGRAMS = test
 
 test_SOURCES = \
+../test/gen/random_sampler.cpp \
 ../test/gen/random_utils.cpp \
 adjacency_list.cpp \
 gen.cpp \

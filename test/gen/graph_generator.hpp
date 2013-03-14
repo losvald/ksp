@@ -29,6 +29,7 @@
 #include "discrete_random_variable.hpp"
 #include "edge_generator.hpp"
 #include "generator.hpp"
+#include "random_sampler.hpp"
 #include "random_utils.hpp"
 
 namespace ksp {
@@ -36,6 +37,14 @@ namespace ksp {
 namespace gen {
 
 namespace test {
+
+namespace {
+
+inline std::size_t sum_first(std::size_t n) {
+  return n * (n - 1) / 2;
+}
+
+} // namespace
 
 //class GraphGeneratorException : std::exception {
 //};
@@ -47,51 +56,114 @@ template<class TGenerator, typename T = unsigned>
 class SimpleWeightedGraphGenerator :
   public ::gen::test::Generator<
   SimpleWeightedGraphGenerator<TGenerator, T>, Edge<T> > {
-    typedef ::gen::test::Generator<
-        SimpleWeightedGraphGenerator<TGenerator, T>, Edge<T> > Base;
-    // TODO GeneratorType doesn't work
+  typedef ::gen::test::Generator<
+    SimpleWeightedGraphGenerator<TGenerator, T>, Edge<T> > Base;
+
 public:
   SimpleWeightedGraphGenerator(unsigned vertex_count,
                                const TGenerator& edge_data_gen = TGenerator(),
                                unsigned seed = ::gen::test::NewSeedVal())
-  : Base(seed, vertex_count * (vertex_count > 0 ? vertex_count - 1U : 0)),
-    adj_vtx_cnt_(vertex_count > 0 ? vertex_count - 1U : 0),
-    cur_ind_(vertex_count * adj_vtx_cnt_),
-    edge_data_gen_(edge_data_gen) { }
+      : Base(seed, vertex_count * (vertex_count - 1U)),
+        adj_vtx_cnt_(vertex_count - 1U),
+        sampler_(vertex_count * adj_vtx_cnt_, seed),
+        edge_data_gen_(edge_data_gen) {
+  }
 
   Edge<T> operator()() {
-    if (cur_ind_ == 0)
+    std::size_t ind = sampler_();
+    if (ind == -1U)
       return NullEdge<T>();
 
-    // swap cur_ind_ - 1 with a random index ind from range [0, cur_ind)
-    std::size_t ind = ::gen::test::Random(cur_ind_--, Base::seed());
-    IndexMap::iterator i = ind_map_.find(ind);
-    std::size_t& ind_val = (i != ind_map_.end() ? i->second
-                                                : ind_map_[ind] = ind);
-    std::size_t ind_val_before_swap = ind_val;
-    if ((i = ind_map_.find(cur_ind_)) != ind_map_.end()) {
-      ind_val = i->second;
-      ind_map_.erase(i);
-    } else
-      ind_val = cur_ind_;
-    return ToEdge(ind_val_before_swap, edge_data_gen_());
+    VertexId tail = ind / adj_vtx_cnt_, head = ind - tail * adj_vtx_cnt_;
+    head += (tail <= head);
+    return Edge<T>(tail, head, edge_data_gen_());
   }
 
 private:
-  typedef std::map<std::size_t, std::size_t> IndexMap;
-
-  inline Edge<T> ToEdge(std::size_t n, const T& edge_data) const {
-    VertexId tail = n / adj_vtx_cnt_, head = n - tail * adj_vtx_cnt_;
-    head += (tail <= head);
-    return Edge<T>(tail, head, edge_data);
-  }
-
   std::size_t adj_vtx_cnt_;
-  std::size_t cur_ind_;
-  IndexMap ind_map_;
+  ::gen::test::RandomSampler sampler_;
   TGenerator edge_data_gen_;
 };
 
+template<class TGenerator, typename T = unsigned>
+class SimpleWeightedUndirectedGraphGenerator :
+  public ::gen::test::Generator<
+  SimpleWeightedUndirectedGraphGenerator<TGenerator, T>, Edge<T> > {
+  typedef ::gen::test::Generator<
+    SimpleWeightedUndirectedGraphGenerator<TGenerator, T>, Edge<T> > Base;
+
+public:
+  SimpleWeightedUndirectedGraphGenerator(
+      unsigned vertex_count,
+      const TGenerator& edge_data_gen = TGenerator(),
+      unsigned seed = ::gen::test::NewSeedVal())
+      : Base(seed, sum_first(vertex_count)),
+        sampler_(sum_first(vertex_count), seed),
+        vtx_cnt_(vertex_count),
+        edge_data_gen_(edge_data_gen) {
+  }
+
+  Edge<T> operator()() {
+    std::size_t ind = sampler_();
+    if (ind == -1U)
+      return NullEdge<T>();
+
+    VertexId head = GetAdjMatRow(ind), tail = ind - sum_first(head);
+    return Edge<T>(tail, head, edge_data_gen_());
+  }
+
+private:
+  VertexId GetAdjMatRow(std::size_t ind) {
+    // 0: x
+    // 1: 0 x
+    // 2: 1 2 x
+    // 3: 3 4 5 x
+    // 4: 6 7 8 9 x
+    VertexId lo = 1, hi = vtx_cnt_;
+    while (lo < hi) {
+      VertexId mid = (lo + hi + 1) / 2;
+      if (sum_first(mid) <= ind)
+        lo = mid;
+      else
+        hi = mid - 1;
+    }
+    return lo;
+  }
+
+  ::gen::test::RandomSampler sampler_;
+  std::size_t vtx_cnt_;
+  TGenerator edge_data_gen_;
+};
+
+class UndirectedEdgeGenerator {
+ public:
+  inline void* operator()() const {
+    return NULL;
+  }
+};
+
+
+class SimpleGraphGenerator
+    : public SimpleWeightedGraphGenerator<UndirectedEdgeGenerator, void*> {
+  typedef SimpleWeightedGraphGenerator<UndirectedEdgeGenerator, void*> super;
+
+ public:
+  SimpleGraphGenerator(unsigned vertex_count,
+                       unsigned seed = ::gen::test::NewSeedVal())
+      : super(vertex_count, UndirectedEdgeGenerator(), seed) { }
+};
+
+class SimpleUndirectedGraphGenerator
+    : public SimpleWeightedUndirectedGraphGenerator<UndirectedEdgeGenerator,
+                                                    void*> {
+  typedef SimpleWeightedUndirectedGraphGenerator<UndirectedEdgeGenerator,
+                                                 void*> super;
+
+ public:
+  SimpleUndirectedGraphGenerator(unsigned vertex_count,
+                                 unsigned seed = ::gen::test::NewSeedVal())
+      : super(vertex_count, UndirectedEdgeGenerator(), seed) { }
+};
 
 template<class TGenerator, typename T = unsigned>
 class WeightedMultigraphGenerator :
