@@ -53,11 +53,6 @@ static inline int GetRandMaxDigits0() {
 }
 
 template<>
-inline int GetRandMaxDigits0<32767>() {
-  return 8;
-}
-
-template<>
 inline int GetRandMaxDigits0<(1U << std::numeric_limits<int>::digits) - 1>() {
   return std::numeric_limits<int>::digits;
 }
@@ -86,15 +81,59 @@ static T Random(unsigned* seed) {
   return r;
 }
 
+namespace {
+
+template<typename T>
+static inline T Random0(const T& from, const T& to, unsigned* seed) {
+    return Random<T>(seed) % (to - from) + from;
+}
+
+} // namespace
+
 template<typename T>
 static inline T Random(const T& to, unsigned* seed = gSeed) {
   return Random<T>(seed) % to;
 }
 
+#if CHAR_MAX <= RAND_MAX
+template<>
+inline char Random(unsigned* seed) {
+  return rand_r(seed);
+}
+#endif
+
+#if UCHAR_MAX <= RAND_MAX
+template<>
+inline unsigned char Random(unsigned* seed) {
+  return rand_r(seed);
+}
+#endif
+
+#if SHORT_MAX <= RAND_MAX
+template<>
+inline short Random(unsigned* seed) {
+  return rand_r(seed);
+}
+#endif
+
+#if USHRT_MAX <= RAND_MAX
+template<>
+inline unsigned short Random(unsigned* seed) {
+  return rand_r(seed);
+}
+#endif
+
+#if INT_MAX <= RAND_MAX
+template<>
+inline int Random(unsigned* seed) {
+  return rand_r(seed);
+}
+#endif
+
 template<typename T>
 static T Random(const T& from, const T& to, unsigned* seed = gSeed) {
   RangeCheck(from, to);
-  return Random<T>(seed) % (to - from) + from;
+  return Random0<T>(from, to, seed);
 }
 
 template<typename T>
@@ -105,9 +144,10 @@ static inline T Random(const std::pair<T, T>& range, unsigned* seed = gSeed) {
 template<typename T>
 static std::vector<T> RandomVector(std::size_t n, const T& from, const T& to,
                                    unsigned* seed = gSeed) {
+  RangeCheck(from, to);
   std::vector<T> v(n);
   for(std::size_t i = 0; i < n; ++i)
-    v[i] = Random<T>(from, to, seed);
+    v[i] = Random0<T>(from, to, seed);
   return v;
 }
 
