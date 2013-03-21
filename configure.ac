@@ -4,7 +4,7 @@ AC_PREREQ([2.59])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([1.10 foreign -Wall no-define])
 AC_PROG_CXX
-AC_PROG_LIBTOOL
+LT_INIT
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile src/Makefile test/Makefile])
 

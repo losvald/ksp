@@ -1,3 +1,4 @@
+AM_CXXFLAGS = -Wall
 bin_PROGRAMS = test
 
 test_SOURCES = \

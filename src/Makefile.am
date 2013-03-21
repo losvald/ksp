@@ -1,5 +1,5 @@
-#lib_LIBRARIES = libksp
-#libksp_a_SOURCES =
+AM_CXXFLAGS = -Werror
+lib_LIBRARIES = libksp.a
 include_HEADERS = \
 algo/dijkstra.hpp \
 algo/sp_range_query.hpp \
@@ -13,8 +13,6 @@ graph_builder.hpp \
 shortest_path_tree.hpp \
 vertex.hpp \
 vertex_map.hpp
-
-lib_LIBRARIES = libksp.a
 libksp_a_SOURCES = \
 util/string_utils.cpp \
 edge.cpp \
