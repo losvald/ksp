@@ -158,6 +158,16 @@ static inline std::vector<T> RandomVector(std::size_t n,
   return RandomVector<T>(n, range.first, range.second, seed);
 }
 
+template <class RandomAccessIterator>
+void RandomShuffle(RandomAccessIterator first, RandomAccessIterator last,
+                   unsigned* seed = gSeed) {
+  typedef typename std::iterator_traits<RandomAccessIterator>::difference_type
+      IndexType;
+  IndexType i, n;
+  n = last - first;
+  for (i = n - 1; i > 0; --i)
+    std::swap(first[i], first[Random<IndexType>(i + 1, seed)]);
+}
 
 namespace {
 
