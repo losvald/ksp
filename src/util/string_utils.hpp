@@ -20,8 +20,11 @@
 #ifndef STRING_UTILS_HPP_
 #define STRING_UTILS_HPP_
 
+#include <map>
+#include <set>
 #include <string>
 #include <sstream>
+#include <vector>
 
 class MakeString {
 public:
@@ -30,7 +33,12 @@ public:
 
   template<typename T>
   MakeString& operator<<(T const & datum) {
-    buffer_ << datum;
+    buffer_ << ToString(datum);
+    return *this;
+  }
+
+  MakeString& operator<<(const char* datum) {
+    buffer_ << (datum != NULL ? datum : "(null)");
     return *this;
   }
 
@@ -42,20 +50,54 @@ std::string ToLowerCase(const std::string& s);
 
 bool EqualsIgnoreCase(const std::string& a, const std::string& b);
 
-template<class InputIterator>
-std::string ToString(InputIterator first, InputIterator last) {
+template<typename T>
+inline std::string ToString(const T& t) {
   std::ostringstream oss;
-  oss << "[";
+  oss << t;
+  return oss.str();
+}
+
+inline std::string ToString(const char* s) {
+  if (s == NULL)
+    return "(null)";
+  return s;
+}
+
+template<class InputIterator>
+std::string ToString(InputIterator first, InputIterator last, const char* sep,
+                     const char* begin, const char* end) {
+  std::ostringstream oss;
+  oss << begin;
   if (first != last) {
     while (true) {
-      oss << *first;
+      oss << ToString(*first);
       if (++first == last)
         break;
-      oss << ", ";
+      oss << sep;
     }
   }
-  oss << "]";
+  oss << end;
   return oss.str();
+}
+
+template<class InputIterator>
+inline std::string ToString(InputIterator first, InputIterator last) {
+  return ToString(first, last, ", ", "[", "]");
+}
+
+template<typename T>
+inline std::string ToString(const std::vector<T>& v) {
+  return ToString(v.begin(), v.end());
+}
+
+template<typename T>
+inline std::string ToString(const std::set<T>& s) {
+  return ToString(s.begin(), s.end(), ", ", "{", "}");
+}
+
+template<typename T>
+inline std::string ToString(const std::multiset<T>& s) {
+  return ToString(s.begin(), s.end(), ", ", "{", "}");
 }
 
 template<class InputIterator>
@@ -64,7 +106,7 @@ std::string MapToString(InputIterator first, InputIterator last) {
   oss << "{";
   if (first != last) {
     while (true) {
-      oss << first->first << " => " << first->second;
+      oss << ToString(first->first) << " => " << ToString(first->second);
       if (++first == last)
         break;
       oss << ", ";
@@ -72,6 +114,16 @@ std::string MapToString(InputIterator first, InputIterator last) {
   }
   oss << "}";
   return oss.str();
+}
+
+template<typename K, typename V>
+inline std::string ToString(const std::map<K, V>& m) {
+  return MapToString(m.begin(), m.end());
+}
+
+template<typename K, typename V>
+inline std::string ToString(const std::multimap<K, V>& m) {
+  return MapToString(m.begin(), m.end());
 }
 
 #endif /* STRING_UTILS_HPP_ */
